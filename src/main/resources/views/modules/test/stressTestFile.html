@@ -64,6 +64,15 @@
                 </label>
             </div>
             <div class="form-group">
+                <div class="col-sm-2 control-label">调试报告</div>
+                <label class="radio-inline">
+                    <input type="radio" name="debugStatus" value="0" v-model="stressTestFile.debugStatus"/> 关闭调试
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="debugStatus" value="1" v-model="stressTestFile.debugStatus"/> 开启调试
+                </label>
+            </div>
+            <div class="form-group">
                 <div class="col-sm-2 control-label"></div>
                 <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
                 &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
@@ -75,20 +84,22 @@
         &nbsp;&nbsp;<a class="btn btn-primary" @click="suspendEcharts">监控暂停</a>
         &nbsp;&nbsp;<a class="btn btn-danger" @click="clearEcharts">清空数据</a>
         &nbsp;&nbsp;<a class="btn btn-warning" @click="reload">返回</a>
-        <div class="panel-heading">平均响应时间</div>
+        <div class="panel-heading">平均响应时间(ms)</div>
         <div id="responseTimesChart"></div>
-        <div class="panel-heading">每秒请求数（RPS）</div>
+        <div class="panel-heading">每秒请求数(RPS)</div>
         <div id="throughputChart"></div>
         <div class="panel-heading">吞吐量Sent(KB/s)</div>
         <div id="networkSentChart"></div>
         <div class="panel-heading">吞吐量Received(KB/s)</div>
         <div id="networkReceivedChart"></div>
-        <div class="panel-heading">总正确率</div>
+        <div class="panel-heading">成功和失败率</div>
         <div id="successPercentageChart"></div>
-        <div class="panel-heading">单个请求错误率</div>
+        <div class="panel-heading">单个请求失败率</div>
         <div id="errorPercentageChart"></div>
-        <div class="panel-heading">并发数</div>
+        <div class="panel-heading">并发数信息</div>
         <div id="threadCountsChart"></div>
+        <div class="panel-heading">访问总数</div>
+        <div id="totalCountsChart"></div>
     </div>
 </div>
 

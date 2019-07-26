@@ -26,9 +26,14 @@
         <if test="originName != null and originName.trim() != ''">
             and t1.origin_name = #{originName}
         </if>
-        <if test="sidx != null and sidx.trim() != ''">
-            order by ${sidx} ${order}
-        </if>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by t1.add_time desc
+            </otherwise>
+        </choose>
         <if test="offset != null and limit != null ">
             limit #{offset}, #{limit}
         </if>
@@ -90,11 +95,25 @@
             <if test="status != null">`status` = #{status},</if>
             <if test="reportStatus != null">`report_status` = #{reportStatus},</if>
             <if test="webchartStatus != null">`webchart_status` = #{webchartStatus},</if>
-            <if test="weblogStatus != null">`weblog_status` = #{weblogStatus},</if>
+            <if test="debugStatus != null">`debug_status` = #{debugStatus},</if>
             <if test="updateBy != null">`update_by` = #{updateBy}</if>
             <if test="addTime != null">`add_time` = #{addTime}</if>
         </set>
         where file_id = #{fileId}
+    </update>
+
+    <update id="updateStatusBatch">
+        update test_stress_case_file
+        <set>
+            <if test="reportStatus != null">`report_status` = #{reportStatus},</if>
+            <if test="webchartStatus != null">`webchart_status` = #{webchartStatus},</if>
+            <if test="debugStatus != null">`debug_status` = #{debugStatus},</if>
+            <if test="updateBy != null">`update_by` = #{updateBy}</if>
+        </set>
+        where file_id in
+        <foreach item="fileIdList" collection="fileIdList" open="(" separator="," close=")">
+            #{fileIdList}
+        </foreach>
     </update>
 
     <!--&lt;!&ndash; 批量更新xx &ndash;&gt;-->

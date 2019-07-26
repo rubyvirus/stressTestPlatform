@@ -103,7 +103,37 @@ public class StressTestSlaveController {
     @RequiresPermissions("test:stress:slaveStatusUpdate")
     public R batchUpdateStatus(@RequestParam(value = "slaveIds[]") List<Long> slaveIds,
                                @RequestParam(value = "status") Integer status) {
-        stressTestSlaveService.updateBatchStatus(slaveIds, status);
+        for (Long slaveId : slaveIds) {
+            stressTestSlaveService.updateBatchStatus(slaveId, status);
+        }
+
         return R.ok();
     }
+
+    /**
+     * 强制切换性能测试分布式节点状态
+     */
+    @SysLog("强制切换性能测试分布式节点状态")
+    @RequestMapping("/batchUpdateStatusForce")
+    @RequiresPermissions("test:stress:slaveStatusUpdateForce")
+    public R batchUpdateStatusForce(@RequestParam(value = "slaveIds[]") List<Long> slaveIds,
+                                    @RequestParam(value = "status") Integer status) {
+        stressTestSlaveService.updateBatchStatusForce(slaveIds, status);
+        return R.ok();
+    }
+
+    /**
+     * 重启已经启动的性能测试分布式节点（停止状态的分布式节点不变）
+     */
+    @SysLog("重启已经启动的性能测试分布式节点")
+    @RequestMapping("/batchRestart")
+    @RequiresPermissions("test:stress:slaveRestart")
+    public R batchRestart(@RequestParam(value = "slaveIds[]") List<Long> slaveIds) {
+
+        for (Long slaveId : slaveIds) {
+            stressTestSlaveService.restartSingle(slaveId);
+        }
+        return R.ok();
+    }
+
 }

@@ -1,7 +1,5 @@
 package io.renren.modules.test.entity;
 
-import org.hibernate.validator.constraints.NotBlank;
-
 import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Date;
@@ -17,6 +15,11 @@ public class StressTestFileEntity implements Serializable {
      * 主键id
      */
     private Long fileId;
+
+    /**
+     * 批量更新时，用于更新的fileId集合
+     */
+    private Long[] fileIdList;
 
     /**
      * 用例id
@@ -37,7 +40,7 @@ public class StressTestFileEntity implements Serializable {
     /**
      * 用例文件名
      */
-    @NotBlank(message="文件名不能为空")
+//    @NotBlank(message="文件名不能为空")
     private String originName;
 
     /**
@@ -68,11 +71,10 @@ public class StressTestFileEntity implements Serializable {
     private Integer webchartStatus;
 
     /**
-     * 状态  0：不需要前端显示日志  1：前端仅显示错误日志
-     *      2：前端仅显示正确日志   3：前端正确和错误日志都显示
+     * 状态 0：关闭debug  1：开始debug调试模式
      * 默认 0
      */
-    private Integer weblogStatus;
+    private Integer debugStatus;
 
     /**
      * 提交的用户
@@ -188,14 +190,6 @@ public class StressTestFileEntity implements Serializable {
         this.webchartStatus = webchartStatus;
     }
 
-    public Integer getWeblogStatus() {
-        return weblogStatus;
-    }
-
-    public void setWeblogStatus(Integer weblogStatus) {
-        this.weblogStatus = weblogStatus;
-    }
-
     public String getSlaveStr() {
         return slaveStr;
     }
@@ -228,6 +222,25 @@ public class StressTestFileEntity implements Serializable {
         this.caseName = caseName;
     }
 
+    public Integer getDebugStatus() {
+        return debugStatus;
+    }
+
+    public void setDebugStatus(Integer debugStatus) {
+        this.debugStatus = debugStatus;
+    }
+
+    public Long[] getFileIdList() {
+        return fileIdList;
+    }
+
+    public void setFileIdList(Long[] fileIdList) {
+        this.fileIdList = fileIdList;
+    }
+
+    /**
+     * 深度clone
+     */
     public StressTestFileEntity clone() {
         StressTestFileEntity clone = new StressTestFileEntity();
         clone.setCaseId(this.getCaseId());
@@ -238,8 +251,9 @@ public class StressTestFileEntity implements Serializable {
         clone.setSlaveStr(this.getSlaveStr());
         clone.setReportStatus(this.getReportStatus());
         clone.setWebchartStatus(this.getWebchartStatus());
-        clone.setWeblogStatus(this.getWeblogStatus());
+        clone.setDebugStatus(this.getDebugStatus());
         clone.setSlaveId(this.getSlaveId());
+        clone.setFileIdList(this.getFileIdList());
         return clone;
     }
 }

@@ -1,7 +1,6 @@
 package io.renren.modules.test.jmeter;
 
 import io.renren.modules.test.utils.StressTestUtils;
-import org.apache.jmeter.threads.JMeterContextService;
 import org.apache.jmeter.visualizers.SamplingStatCalculator;
 
 import java.util.HashMap;
@@ -62,9 +61,16 @@ public class JmeterStatEntity {
     private Map<String, String> threadCountsMap = new HashMap<>();
 
     /**
+     * 统计请求总数的监控数据，返回每一个请求的总数量。
+     */
+    private Map<String, String> totalCountsMap = new HashMap<>();
+
+    /**
      * 当前是否正在运行
      */
     private Integer runStatus = StressTestUtils.RUNNING;
+
+    private JmeterRunEntity jmeterRunEntity;
 
     /**
      * 对于分布式场景，取到的statMap是总的，即包含了所有脚本执行的label的数据。
@@ -79,9 +85,12 @@ public class JmeterStatEntity {
         }
 
         // StressTestUtils.jMeterEntity4file 中保存的都是真实的脚本文件信息
-        JmeterRunEntity jmeterRunEntity = StressTestUtils.jMeterEntity4file.get(fileId);
+        jmeterRunEntity = StressTestUtils.jMeterEntity4file.get(fileId);
         if (jmeterRunEntity != null) {
             runStatus = jmeterRunEntity.getRunStatus();
+        } else {
+            // jmeterRunEntity 为null 说明是初始化状态，没有执行过。
+            runStatus = StressTestUtils.INITIAL;
         }
     }
 
@@ -89,8 +98,8 @@ public class JmeterStatEntity {
         if (statMap != null) {
             statMap.forEach((k, v) -> {
                 /**
-                 * 平均响应时间并非真正的一个请求响应的时间，而是一段时间内响应了多少请求而计算出的平均响应时间。
-                 * 所以，如果是被测试的服务器满负荷，这个响应时间才是接近于一个请求的真正的响应时间。
+                 * 平均响应时间算法是当前请求总共花费的时间/响应了多少请求。
+                 * 这个时间是正确的。
                  */
                 responseTimesMap.put(k + "_Avg(ms)", String.format("%.2f", v.getMean()));
 //                responseTimesMap.put(k + "_Max(ms)", String.valueOf(v.getMax()));
@@ -195,15 +204,42 @@ public class JmeterStatEntity {
     }
 
     public Map<String, String> getThreadCountsMap() {
-        JMeterContextService.ThreadCounts tc = JMeterContextService.getThreadCounts();
-        threadCountsMap.put("Active", String.valueOf(tc.activeThreads));
-        threadCountsMap.put("Started", String.valueOf(tc.startedThreads));
-        threadCountsMap.put("Finished", String.valueOf(tc.finishedThreads));
+        if (jmeterRunEntity != null) {
+            Map<String, Integer> threadsCountMap = jmeterRunEntity.getNumberOfActiveThreads();
+            int active = threadsCountMap.get(JmeterRunEntity.ACTIVE_THREADS);
+            int started = threadsCountMap.get(JmeterRunEntity.STARTED_THREADS);
+            int finished = threadsCountMap.get(JmeterRunEntity.FINISHED_THREADS);
+
+            threadCountsMap.put("Active", String.valueOf(active));
+
+            if (started > 0) {
+                threadCountsMap.put("Started", String.valueOf(started));
+            }
+            if (finished > 0) {
+                threadCountsMap.put("Finished", String.valueOf(finished));
+            }
+
+        }
         return threadCountsMap;
     }
 
     public void setThreadCountsMap(Map<String, String> threadCountsMap) {
         this.threadCountsMap = threadCountsMap;
+    }
+
+    public Map<String, String> getTotalCountsMap() {
+        if (statMap != null) {
+            for (String key : statMap.keySet()) {
+                SamplingStatCalculator calculator = statMap.get(key);
+                long totalCount = calculator.getCount();
+                totalCountsMap.put(key + "_总请求数", String.valueOf(totalCount));
+            }
+        }
+        return totalCountsMap;
+    }
+
+    public void setTotalCountsMap(Map<String, String> totalCountsMap) {
+        this.totalCountsMap = totalCountsMap;
     }
 
     public Integer getRunStatus() {
